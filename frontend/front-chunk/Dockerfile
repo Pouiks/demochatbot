@@ -1,5 +1,5 @@
-# Multi-stage build pour optimiser la taille
-FROM node:20-alpine AS builder
+# Dockerfile pour le développement local
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -7,35 +7,14 @@ WORKDIR /app
 COPY package*.json ./
 
 # Installer les dépendances
-RUN npm ci
+RUN npm install
 
 # Copier le code source
 COPY . .
 
-# Build l'application
-RUN npm run build
+# Exposer le port Vite
+EXPOSE 5173
 
-# Stage de production
-FROM node:20-alpine
-
-WORKDIR /app
-
-# Copier uniquement les dépendances de production
-COPY package*.json ./
-RUN npm ci --only=production
-
-# Copier le serveur Express
-COPY server.js ./
-
-# Copier les fichiers buildés depuis le stage builder
-COPY --from=builder /app/dist ./dist
-
-# Railway injecte dynamiquement $PORT (par défaut 3000)
-ENV PORT=3000
-
-# Exposer le port
-EXPOSE 3000
-
-# Démarrer le serveur Express
-CMD ["node", "server.js"]
+# Démarrer Vite en mode dev avec hot-reload
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 

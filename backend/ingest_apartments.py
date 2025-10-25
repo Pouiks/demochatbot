@@ -30,9 +30,16 @@ def embed(text):
     )
     return response.data[0].embedding
 
-# Charger les chunks d'appartements depuis le fichier téléchargé
-print("[INFO] Chargement des appartements depuis apartments_descriptions_fr.jsonl...")
-apartments_file = "apartments_descriptions_fr.jsonl"
+# Charger les chunks d'appartements depuis le fichier spécifié
+import sys
+
+# Permettre de spécifier le fichier en argument
+if len(sys.argv) > 1:
+    apartments_file = sys.argv[1]
+else:
+    apartments_file = "apartments_generated_300.jsonl"  # Par défaut le fichier généré
+
+print(f"[INFO] Chargement des appartements depuis {apartments_file}...")
 
 with open(apartments_file, "r", encoding="utf-8") as f:
     lines = [json.loads(line) for line in f if line.strip()]
@@ -52,7 +59,16 @@ for i, apt in enumerate(lines, 1):
     rooms = metadata.get('rooms', 'N/A')
     rent = metadata.get('rent_cc_eur', 'N/A')
     
-    print(f"  [{i}/{len(lines)}] {city} - {rooms} piece(s) - {rent} EUR/mois")
+    # Déterminer le nom de la typologie
+    if rooms == 0:
+        typologie = "Colocation"
+    elif rooms == 1:
+        surface = metadata.get('surface_m2', 0)
+        typologie = "Studio" if surface < 23 else "T1"
+    else:
+        typologie = f"T{rooms}"
+    
+    print(f"  [{i}/{len(lines)}] {city} - {typologie} - {rent} EUR/mois")
     
     # Générer l'embedding
     vector = embed(content)

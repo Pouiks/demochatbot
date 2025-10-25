@@ -1,0 +1,70 @@
+[33mcommit 2bc6ab8582ed82df17d29bd42e9b55436001bf55[m
+Author: Pouiks <virgilejoinville@gmail.com>
+Date:   Sat Oct 25 15:51:06 2025 +0200
+
+    Initial commit - ECLA Chat POC (sécurisé)
+
+ .gitignore                                         |   57 [32m+[m
+ CHANGELOG.md                                       |  150 [32m+[m
+ DEPLOY.md                                          |   58 [32m+[m
+ LOGS_ECLA.bat                                      |   17 [32m+[m
+ MIGRATION_ADMIN.md                                 |  258 [32m++[m
+ QUICKSTART.md                                      |  255 [32m++[m
+ README_PROJET.md                                   |  287 [32m++[m
+ RESUME_MODIFICATIONS.md                            |  260 [32m++[m
+ START_ECLA.bat                                     |   22 [32m+[m
+ STOP_ECLA.bat                                      |   35 [32m+[m
+ backend/APARTMENTS_README.md                       |  138 [32m+[m
+ backend/Dockerfile                                 |   18 [32m+[m
+ backend/admin_server.py                            |  750 [32m++++[m
+ backend/apartments_descriptions_fr.jsonl           |   18 [32m+[m
+ backend/apartments_ecla_real.jsonl                 |   18 [32m+[m
+ backend/app.py                                     |  147 [32m+[m
+ backend/classify_chunks.py                         |   54 [32m+[m
+ backend/crawl2chunks.py                            |  142 [32m+[m
+ backend/ecla_chunks.jsonl                          |  155 [32m+[m
+ backend/ecla_chunks_classified.jsonl               |  243 [32m++[m
+ backend/ingest_apartments.py                       |   87 [32m+[m
+ backend/ingest_qdrant.py                           |   75 [32m+[m
+ backend/preview_chunks.py                          |    0
+ backend/requirements.txt                           |    9 [32m+[m
+ backend/search_server.py                           |  622 [32m+++[m
+ backend/startup.py                                 |  124 [32m+[m
+ backend/startup_admin.py                           |   45 [32m+[m
+ backend/test_extractor.py                          |  203 [32m+[m
+ backend/text_extractor.py                          |  161 [32m+[m
+ backend/uxco_chunks.jsonl                          |  194 [32m+[m
+ docker-compose.yml                                 |   60 [32m+[m
+ frontend/front-chunk/.gitignore                    |   26 [32m+[m
+ frontend/front-chunk/Dockerfile                    |   20 [32m+[m
+ frontend/front-chunk/README.md                     |   69 [32m+[m
+ frontend/front-chunk/eslint.config.js              |   23 [32m+[m
+ frontend/front-chunk/index.html                    |   13 [32m+[m
+ frontend/front-chunk/package-lock.json             | 4164 [32m++++++++++++++++++++[m
+ frontend/front-chunk/package.json                  |   34 [32m+[m
+ frontend/front-chunk/public/vite.svg               |    1 [32m+[m
+ frontend/front-chunk/src/App.css                   |   53 [32m+[m
+ frontend/front-chunk/src/App.tsx                   |   40 [32m+[m
+ frontend/front-chunk/src/assets/react.svg          |    1 [32m+[m
+ .../front-chunk/src/components/ApartmentCard.tsx   |   95 [32m+[m
+ .../front-chunk/src/components/SemanticSearch.tsx  |  249 [32m++[m
+ frontend/front-chunk/src/components/ui/button.tsx  |    3 [32m+[m
+ frontend/front-chunk/src/components/ui/card.tsx    |   26 [32m+[m
+ frontend/front-chunk/src/components/ui/input.tsx   |   24 [32m+[m
+ .../front-chunk/src/components/ui/scroll-area.tsx  |   18 [32m+[m
+ frontend/front-chunk/src/index.css                 |  853 [32m++++[m
+ frontend/front-chunk/src/main.tsx                  |   10 [32m+[m
+ frontend/front-chunk/src/pages/AdminPanel.tsx      |  522 [32m+++[m
+ .../front-chunk/src/pages/AdminPanelEnhanced.tsx   |  898 [32m+++++[m
+ frontend/front-chunk/src/styles/AdminPanel.css     |  630 [32m+++[m
+ frontend/front-chunk/src/vite-env.d.ts             |    1 [32m+[m
+ frontend/front-chunk/tsconfig.app.json             |   31 [32m+[m
+ frontend/front-chunk/tsconfig.json                 |    8 [32m+[m
+ frontend/front-chunk/tsconfig.node.json            |   25 [32m+[m
+ frontend/front-chunk/vite.config.ts                |    6 [32m+[m
+ railway.env.example                                |   13 [32m+[m
+ railway.json                                       |   12 [32m+[m
+ readme.md                                          |  165 [32m+[m
+ start.ps1                                          |  178 [32m+[m
+ start.sh                                           |  127 [32m+[m
+ 63 files changed, 13000 insertions(+)
