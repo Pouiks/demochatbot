@@ -9,7 +9,14 @@ import hashlib
 load_dotenv()
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-qdrant = QdrantClient(host=os.getenv("QDRANT_HOST", "localhost"), port=int(os.getenv("QDRANT_PORT", "6333")))
+# Configuration Qdrant adaptable (local vs cloud)
+qdrant_url = os.getenv("QDRANT_URL")
+qdrant_api_key = os.getenv("QDRANT_API_KEY")
+
+if qdrant_url:
+    qdrant = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
+else:
+    qdrant = QdrantClient(host=os.getenv("QDRANT_HOST", "localhost"), port=int(os.getenv("QDRANT_PORT", "6333")))
 
 COLLECTION_NAME = "chunks"
 
