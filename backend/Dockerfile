@@ -8,6 +8,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Invalider le cache pour forcer la copie des nouveaux fichiers
+ARG CACHEBUST=1
+
 # Copier le code source
 COPY . .
 
