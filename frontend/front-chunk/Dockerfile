@@ -30,8 +30,11 @@ COPY server.js ./
 # Copier les fichiers buildés depuis le stage builder
 COPY --from=builder /app/dist ./dist
 
-# Exposer le port (Railway utilise $PORT)
-EXPOSE 8080
+# Railway injecte dynamiquement $PORT (par défaut 3000)
+ENV PORT=3000
+
+# Exposer le port
+EXPOSE 3000
 
 # Démarrer le serveur Express
 CMD ["node", "server.js"]
