@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+frontend/front-chunk/.env   
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+.cache/
+
+# Environment variables
+.env
+backend/.env
+*.env.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+qdrant_storage/
+
+# Backups
+*.backup
+*.bak
+
+# Logs
+*.log
+logs/
+
+# Frontend build
+frontend/front-chunk/dist/
+frontend/front-chunk/node_modules/
+
+# Railway
+railway.env
+!railway.env.example
+

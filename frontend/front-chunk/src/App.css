@@ -1,0 +1,53 @@
+#root {
+  width: 100%;
+  min-height: 100vh; /* Changé de height à min-height */
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Empêcher le scroll horizontal */
+}
+
+.admin-nav-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  transition: all 0.2s ease;
+  z-index: 1000;
+}
+
+.admin-nav-btn:hover {
+  background: #2563eb;
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.chat-nav-btn {
+  position: fixed;
+  top: 20px;
+  left: 10px; /* Déplacé plus à gauche */
+  padding: 8px 12px; /* Padding réduit */
+  background: white;
+  color: #64748b;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 12px; /* Police plus petite */
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2000; /* Plus élevé que l'admin */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  white-space: nowrap; /* Empêcher le retour à la ligne */
+}
+
+.chat-nav-btn:hover {
+  background: #f8fafc;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
