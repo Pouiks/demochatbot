@@ -13,8 +13,11 @@ RUN npm ci
 # Copier le code source
 COPY . .
 
-# Exposer le port
+# Build de l'application React
+RUN npm run build
+
+# Exposer le port (Railway définit $PORT dynamiquement)
 EXPOSE 5173
 
-# Commande pour lancer l'application en mode développement
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Lancer le serveur Express pour servir les fichiers statiques
+CMD ["npm", "start"]
