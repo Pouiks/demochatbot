@@ -8,6 +8,12 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Debug: Logger toutes les variables d'environnement Railway
+console.log('🔍 Environment variables:');
+console.log('PORT:', process.env.PORT);
+console.log('RAILWAY_STATIC_URL:', process.env.RAILWAY_STATIC_URL);
+console.log('RAILWAY_PUBLIC_DOMAIN:', process.env.RAILWAY_PUBLIC_DOMAIN);
+
 // Servir les fichiers statiques du dossier dist
 app.use(express.static(path.join(__dirname, 'dist')));
 
