@@ -27,10 +27,20 @@ if not openai_api_key:
 
 openai_client = OpenAI(api_key=openai_api_key)
 
-# Configuration Qdrant adaptable (local vs production)
-qdrant_host = os.getenv("QDRANT_HOST", "localhost")
-qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
-qdrant = QdrantClient(host=qdrant_host, port=qdrant_port)
+# Configuration Qdrant adaptable (local vs cloud)
+qdrant_url = os.getenv("QDRANT_URL")
+qdrant_api_key = os.getenv("QDRANT_API_KEY")
+
+if qdrant_url:
+    # Mode Cloud (Railway, production)
+    print(f"🌐 Connexion à Qdrant Cloud: {qdrant_url}")
+    qdrant = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
+else:
+    # Mode Local (développement)
+    qdrant_host = os.getenv("QDRANT_HOST", "localhost")
+    qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
+    print(f"🏠 Connexion à Qdrant Local: {qdrant_host}:{qdrant_port}")
+    qdrant = QdrantClient(host=qdrant_host, port=qdrant_port)
 
 app = FastAPI()
 
