@@ -9,7 +9,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Invalider le cache pour forcer la copie des nouveaux fichiers
-ARG CACHEBUST=1
+ARG CACHEBUST=2
 
 # Copier le code source
 COPY . .
