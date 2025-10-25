@@ -10,16 +10,30 @@ from qdrant_client import QdrantClient
 from qdrant_client.http.exceptions import UnexpectedResponse
 
 COLLECTION_NAME = "chunks"
+
+# Configuration Qdrant adaptable (local vs cloud)
+QDRANT_URL = os.getenv("QDRANT_URL")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")
 QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))
 
 def wait_for_qdrant(max_attempts=60):
     """Attendre que Qdrant soit prêt"""
-    print("Attente de Qdrant...")
+    
+    if QDRANT_URL:
+        print(f"🌐 Connexion à Qdrant Cloud: {QDRANT_URL}")
+    else:
+        print(f"🏠 Connexion à Qdrant Local: {QDRANT_HOST}:{QDRANT_PORT}")
+        print("Attente de Qdrant...")
     
     for attempt in range(max_attempts):
         try:
-            client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT, timeout=5)
+            if QDRANT_URL:
+                # Mode Cloud
+                client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY, timeout=10)
+            else:
+                # Mode Local
+                client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT, timeout=5)
             # Tester la connexion avec un timeout court
             client.get_collections()
             print("✅ Qdrant est prêt !")
