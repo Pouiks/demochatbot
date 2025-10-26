@@ -234,7 +234,9 @@ export default function SemanticSearch() {
 
     // Handlers pour le système de réservation
     const handleReserveTypologie = (typologie: Apartment) => {
+        console.log('[SemanticSearch] handleReserveTypologie called for:', typologie.id);
         setSelectedTypologie(typologie);
+        console.log('[SemanticSearch] Setting showUpsellModal to true');
         setShowUpsellModal(true);
     };
 
@@ -511,7 +513,10 @@ export default function SemanticSearch() {
                     typologie={selectedTypologie}
                     currentOptions={upsellOptions}
                     onValidate={handleValidateOptions}
-                    onClose={() => setShowUpsellModal(false)}
+                    onClose={() => {
+                        console.log('[SemanticSearch] Closing modal');
+                        setShowUpsellModal(false);
+                    }}
                 />
             )}
         </div>

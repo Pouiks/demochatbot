@@ -53,11 +53,17 @@ const calculateOptionsCost = (options: UpsellOptions): number => {
 };
 
 export default function UpsellOptionsModal({ typologie, currentOptions, onValidate, onClose }: UpsellOptionsModalProps) {
+    console.log('[UpsellOptionsModal] Modal rendered for typologie:', typologie.id);
     const [options, setOptions] = useState<UpsellOptions>(currentOptions);
+    const [isFooterExpanded, setIsFooterExpanded] = useState(false);
 
     const floorSupplement = calculateFloorSupplement(typologie.floor || 0);
     const optionsCost = calculateOptionsCost(options);
     const totalRent = typologie.rent_cc_eur + floorSupplement + optionsCost;
+
+    // Calculer les frais initiaux
+    const applicationFee = typologie.application_fee || 100;
+    const depositAmount = totalRent * (typologie.deposit_months || 1);
 
     const toggleOption = (option: keyof UpsellOptions) => {
         setOptions(prev => ({
@@ -172,13 +178,88 @@ export default function UpsellOptionsModal({ typologie, currentOptions, onValida
                     </div>
                 </div>
 
-                <div className="upsell-modal-footer">
-                    <div className="upsell-total">
-                        <span>Total mensuel</span>
-                        <span className="upsell-total-price">{totalRent}€/mois</span>
+                <div className={`upsell-modal-footer-sticky ${isFooterExpanded ? 'expanded' : ''}`}>
+                    {/* Toggle button */}
+                    <button
+                        className="upsell-footer-toggle"
+                        onClick={() => setIsFooterExpanded(!isFooterExpanded)}
+                        aria-label={isFooterExpanded ? "Réduire les détails" : "Voir les détails"}
+                    >
+                        <span className="toggle-arrow">{isFooterExpanded ? '▼' : '▲'}</span>
+                    </button>
+
+                    {/* Contenu scrollable déplié */}
+                    {isFooterExpanded && (
+                        <div className="upsell-footer-details-expanded">
+                            {/* Section Loyer + Extras */}
+                            <div className="upsell-footer-section upsell-footer-rent">
+                                <div className="upsell-footer-line upsell-footer-main">
+                                    <span className="upsell-footer-label">Loyer</span>
+                                    <span className="upsell-footer-value">{typologie.rent_cc_eur + floorSupplement}€/mois</span>
+                                </div>
+
+                                {optionsCost > 0 && (
+                                    <>
+                                        <div className="upsell-footer-extras-title">Extras</div>
+                                        {options.tv && (
+                                            <div className="upsell-footer-line upsell-footer-extra">
+                                                <span>Télévision (32")</span>
+                                                <span>40€/mois</span>
+                                            </div>
+                                        )}
+                                        {options.packLinge && (
+                                            <div className="upsell-footer-line upsell-footer-extra">
+                                                <span>Pack linge</span>
+                                                <span>30€/mois</span>
+                                            </div>
+                                        )}
+                                        {options.parkingIndoor && (
+                                            <div className="upsell-footer-line upsell-footer-extra">
+                                                <span>Parking sous-sol</span>
+                                                <span>50€/mois</span>
+                                            </div>
+                                        )}
+                                        {options.parkingOutdoor && (
+                                            <div className="upsell-footer-line upsell-footer-extra">
+                                                <span>Parking extérieur</span>
+                                                <span>30€/mois</span>
+                                            </div>
+                                        )}
+                                        <div className="upsell-footer-line upsell-footer-subtotal">
+                                            <span className="upsell-footer-label-bold">Total extras</span>
+                                            <span className="upsell-footer-value-bold">{optionsCost}€/mois</span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Section Prix Total */}
+                            <div className="upsell-footer-section upsell-footer-total-section">
+                                <div className="upsell-footer-charges">Charges comprises</div>
+
+                                <div className="upsell-footer-line upsell-footer-fees">
+                                    <span>+ Frais de dossier</span>
+                                    <span>{applicationFee}€</span>
+                                </div>
+                                <div className="upsell-footer-line upsell-footer-fees">
+                                    <span>+ Dépôt de garantie</span>
+                                    <span>{depositAmount}€</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Prix total toujours visible */}
+                    <div className="upsell-footer-total-bar">
+                        <div className="upsell-footer-total-line">
+                            <span className="upsell-footer-label-total">Prix total</span>
+                            <span className="upsell-footer-value-total">{totalRent}€/mois</span>
+                        </div>
                     </div>
+
+                    {/* Bouton de validation */}
                     <button className="upsell-validate-btn" onClick={handleValidate}>
-                        Valider mes options
+                        Continuer
                     </button>
                 </div>
             </div>

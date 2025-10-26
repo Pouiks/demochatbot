@@ -50,8 +50,12 @@ export default function ApartmentCard({ apartment, onReserve }: ApartmentCardPro
   };
 
   const handleReserve = () => {
+    console.log('[ApartmentCard] handleReserve called for apartment:', apartment.id);
     if (onReserve) {
+      console.log('[ApartmentCard] Calling onReserve callback');
       onReserve(apartment);
+    } else {
+      console.log('[ApartmentCard] No onReserve callback provided!');
     }
   };
 
@@ -130,10 +134,20 @@ export default function ApartmentCard({ apartment, onReserve }: ApartmentCardPro
             )}
 
             {/* Bouton Affiner ma réservation */}
-            {onReserve && (
-              <button className="apartment-card-reserve-btn" onClick={handleReserve}>
+            {onReserve ? (
+              <button
+                className="apartment-card-reserve-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('[ApartmentCard] Button clicked!');
+                  handleReserve();
+                }}
+              >
                 🎯 Affiner ma réservation
               </button>
+            ) : (
+              <div style={{ color: 'red', fontSize: '12px' }}>DEBUG: onReserve callback missing!</div>
             )}
           </div>
         </div>

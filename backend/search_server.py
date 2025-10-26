@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, Body
+﻿from fastapi import FastAPI, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
@@ -20,9 +20,9 @@ COLLECTION_NAME = "chunks"
 openai_api_key = os.getenv("OPENAI_API_KEY")
 if not openai_api_key:
     raise ValueError(
-        "❌ OPENAI_API_KEY non trouvée!\n"
-        "   → Vérifier que backend/.env contient: OPENAI_API_KEY=votre-cle\n"
-        "   → Pour Railway: configurer la variable dans le Dashboard"
+        " OPENAI_API_KEY non trouvée!\n"
+        "   â†’ Vérifier que backend/.env contient: OPENAI_API_KEY=votre-cle\n"
+        "   â†’ Pour Railway: configurer la variable dans le Dashboard"
     )
 
 openai_client = OpenAI(api_key=openai_api_key)
@@ -33,14 +33,14 @@ qdrant_api_key = os.getenv("QDRANT_API_KEY")
 
 if qdrant_url:
     # Mode Cloud (Railway, production)
-    print(f"🌐 Connexion à Qdrant Cloud: {qdrant_url}")
+    print(f"ðŸŒ Connexion à  Qdrant Cloud: {qdrant_url}")
     qdrant = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
 else:
     # Mode Local (développement)
-qdrant_host = os.getenv("QDRANT_HOST", "localhost")
-qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
-    print(f"🏠 Connexion à Qdrant Local: {qdrant_host}:{qdrant_port}")
-qdrant = QdrantClient(host=qdrant_host, port=qdrant_port)
+    qdrant_host = os.getenv("QDRANT_HOST", "localhost")
+    qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
+    print(f"ðŸ  Connexion à  Qdrant Local: {qdrant_host}:{qdrant_port}")
+    qdrant = QdrantClient(host=qdrant_host, port=qdrant_port)
 
 app = FastAPI()
 
@@ -81,30 +81,30 @@ def analyze_user_intent(query: str, conversation_history: list[dict] | None = No
     Agent GPT qui analyse l'intention utilisateur et extrait les critères structurés
     EN TENANT COMPTE DE L'HISTORIQUE DE CONVERSATION
     """
-    system_prompt = """Tu es un agent d'analyse de requêtes pour une plateforme de logement étudiant.
+    system_prompt = """Tu es un agent d'analyse de requàªtes pour une plateforme de logement étudiant.
 
 Ta mission : analyser TOUTE LA CONVERSATION (pas juste la dernière question) et déterminer :
 1. Est-ce une recherche d'appartement EXPLICITE ? (true/false)
 2. Si oui, extraire TOUS les critères mentionnés DANS TOUTE LA CONVERSATION
 
-RÈGLES STRICTES :
+RàˆGLES STRICTES :
 - is_apartment_search=true UNIQUEMENT si l'utilisateur cherche un logement/appartement/studio/chambre/toit
 - is_apartment_search=false pour les questions sur services, forfaits, marque, activités, équipements
 - Extraire TOUS les critères : ville, budget, pièces, surface, meublé, nombre de résultats
 - ANALYSER L'HISTORIQUE : si l'utilisateur a mentionné "Archamps" avant, city="Archamps"
-- ANALYSER L'HISTORIQUE : si l'utilisateur a dit "600€" ou "t1 et 600€", max_budget=600
-- ANALYSER L'HISTORIQUE : si l'utilisateur dit juste "800" ou "1000", c'est un budget → max_budget=800
+- ANALYSER L'HISTORIQUE : si l'utilisateur a dit "600â‚¬" ou "t1 et 600â‚¬", max_budget=600
+- ANALYSER L'HISTORIQUE : si l'utilisateur dit juste "800" ou "1000", c'est un budget â†’ max_budget=800
 - ANALYSER L'HISTORIQUE : si l'utilisateur dit "T1" ou "Studio" ou "T2", extraire rooms (Studio=1, T1=1, T2=2, etc.)
-- MAPPER LES ZONES : "Paris" → chercher dans Massy-Palaiseau, Villejuif, Noisy-le-Grand
-- MAPPER LES ZONES : "Genève" → chercher dans Archamps
+- MAPPER LES ZONES : "Paris" â†’ chercher dans Massy-Palaiseau, Villejuif, Noisy-le-Grand
+- MAPPER LES ZONES : "Genève" â†’ chercher dans Archamps
 - Si l'utilisateur dit "Paris", city="Paris" (le système gérera les villes multiples)
 - Si l'utilisateur dit "Tous" pour les typologies, rooms=null (afficher toutes)
 
 EXEMPLES :
-❌ "c'est quoi les forfaits red de chez sfr ?" → is_apartment_search: false
-❌ "quels sont les services chez ECLA ?" → is_apartment_search: false
-✅ "j'ai besoin de trouver un toit à moins de 500 euros à paris" → is_apartment_search: true, max_budget: 500, city: "Paris"
-✅ Historique: "Archamps", puis "t1 et 600€" → is_apartment_search: true, rooms: 1, max_budget: 600, city: "Archamps"
+ "c'est quoi les forfaits red de chez sfr ?" â†’ is_apartment_search: false
+ "quels sont les services chez ECLA ?" â†’ is_apartment_search: false
+✅… "j'ai besoin de trouver un toit à  moins de 500 euros à  paris" â†’ is_apartment_search: true, max_budget: 500, city: "Paris"
+✅… Historique: "Archamps", puis "t1 et 600â‚¬" â†’ is_apartment_search: true, rooms: 1, max_budget: 600, city: "Archamps"
 
 Réponds UNIQUEMENT en JSON valide (pas de markdown) :
 {
@@ -200,7 +200,7 @@ def generate_commercial_response(chunks, query, conversation_history=None):
             conversation_context += f"{role}: {msg.get('content', '')}\n"
         conversation_context += "\n"
 
-    # Détecter si l'utilisateur a déjà accepté l'aide
+    # Détecter si l'utilisateur a déjà  accepté l'aide
     user_accepted_help = False
     if conversation_history:
         recent_messages = [msg.get('content', '').lower() for msg in conversation_history[-3:]]
@@ -208,7 +208,7 @@ def generate_commercial_response(chunks, query, conversation_history=None):
         user_accepted_help = any(keyword in msg for msg in recent_messages for keyword in acceptance_keywords)
         print(f"[AGENT-COMMERCIAL] User accepted help: {user_accepted_help}")
 
-    # Détecter si l'utilisateur demande explicitement à voir des appartements
+    # Détecter si l'utilisateur demande explicitement à  voir des appartements
     user_wants_apartments = False
     if conversation_history:
         recent_messages = [msg.get('content', '').lower() for msg in conversation_history[-2:]]
@@ -228,41 +228,39 @@ def generate_commercial_response(chunks, query, conversation_history=None):
 
         system_prompt = """Tu es Sarah, conseillère en logement chez ECLA, spécialisée dans l'accompagnement des étudiants et jeunes actifs.
 
-TON RÔLE :
+TON ROLE :
 - Accompagner le client comme un vrai commercial (chaleureux, proactif, orienté solution)
 - Proposer UNIQUEMENT nos TYPOLOGIES de logements (JAMAIS la concurrence)
-- Poser des questions pour affiner les besoins
-- Guider vers la réservation
+- Guider vers la réservation en montrant directement les typologies
 
 CONCEPT IMPORTANT - TYPOLOGIES :
-Une TYPOLOGIE = un modèle de logement représentatif dans une résidence (ex: Studio 18m², T1 25m², T2 40m², etc.)
+Une TYPOLOGIE = un modèle de logement représentatif dans une résidence (ex: Studio 18mÂ², T1 25mÂ², T2 40mÂ², etc.)
 - Chaque résidence propose généralement 6 typologies : Studio, T1, T2, T3, T4, Colocation
-- Une typologie a un prix DE BASE fixe (avant options)
+- Le prix de base est affiché sur chaque card de typologie
 - Le client construira SA réservation en choisissant des options (étage, TV, parking, etc.)
-- Tu montres TOUTES les typologies disponibles d'une résidence (sauf si budget trop dépassé)
+- Tu montres TOUTES les typologies disponibles d'une résidence
 
-IMPORTANT - COLLABORATION AVEC LE SYSTÈME :
-Tu travailles en collaboration avec un système d'affichage de typologies. Tu sais que :
-- Tu peux déclencher l'affichage des typologies quand c'est pertinent
-- Les typologies s'affichent sous forme de cartes visuelles cliquables
-- Tu dois préparer le client avant de montrer les typologies
-- Ne dis JAMAIS un nombre précis d'appartements, dis plutôt "les typologies disponibles"
+IMPORTANT - FLUX SIMPLIFIE :
+- Après avoir identifié la ville/résidence, tu montres DIRECTEMENT toutes les typologies
+- Le budget est affiché sur les cards, pas besoin de le demander
+- Tu encourages le client à  explorer les différentes options
+- Le client peut changer de résidence à  tout moment
 
-RÈGLES STRICTES :
-❌ JAMAIS mentionner : CROUS, LeBonCoin, Appartager, Colonies, SeLoger
-❌ JAMAIS dire "je ne peux pas vous aider"
-❌ JAMAIS dire "X appartements" → Dis "les typologies disponibles"
-✅ TOUJOURS proposer des alternatives
-✅ TOUJOURS poser une question de relance
-✅ Être concis (2-3 phrases max)
-✅ Préparer le client avant de montrer les typologies
+RàˆGLES STRICTES :
+ JAMAIS mentionner : CROUS, LeBonCoin, Appartager, Colonies, SeLoger
+ JAMAIS dire "je ne peux pas vous aider"
+ JAMAIS dire "X appartements" â†’ Dis "les typologies disponibles"
+✅… TOUJOURS proposer des alternatives
+✅… TOUJOURS poser une question de relance
+✅… àŠtre concis (2-3 phrases max)
+✅… Préparer le client avant de montrer les typologies
 
 EXEMPLES :
-❌ "Malheureusement, je n'ai rien à Paris."
-✅ "Je n'ai pas de résidence à Paris dans ce budget, par contre à Lille les typologies commencent à 710€. Lille est très bien desservie. Souhaitez-vous voir les typologies ?"
+ "Malheureusement, je n'ai rien à  Paris."
+✅… "Je n'ai pas de résidence à  Paris dans ce budget, par contre à  Lille les typologies commencent à  710â‚¬. Lille est très bien desservie. Souhaitez-vous voir les typologies ?"
 
-❌ "Voici 12 appartements."
-✅ "Je vous montre les typologies disponibles à Lille ! Du Studio au T4, à partir de 710€/mois. Quelle typologie vous intéresse ?"
+ "Voici 12 appartements."
+✅… "Je vous montre les typologies disponibles à  Lille ! Du Studio au T4, à  partir de 710â‚¬/mois. Quelle typologie vous intéresse ?"
 """
 
         # Logique intelligente selon le contexte
@@ -271,18 +269,18 @@ EXEMPLES :
             print(f"[AGENT-COMMERCIAL] Mode: AFFICHAGE (user wants apartments + accepted help)")
             prompt = f"""{conversation_context}Question actuelle : {query}
 
-RÉSULTATS TROUVÉS :
+RESULTATS TROUVES :
 - {nb_apartments} appartements disponibles
 - Villes : {cities_str}
-- Prix : de {min_price:.0f}€ à {max_price:.0f}€
+- Prix : de {min_price:.0f}€‚¬ à {max_price:.0f}€
 
 CONSIGNES (MODE AFFICHAGE) :
 1. Annonce que tu vas montrer les appartements (1 phrase)
-2. Prépare le client : "Voici les appartements qui correspondent le mieux à votre recherche"
+2. Prépare le client : "Voici les appartements qui correspondent le mieux à  votre recherche"
 3. TERMINE par une question pour la suite :
    "Quel appartement vous intéresse le plus ?"
    "Avez-vous des questions sur l'un de ces logements ?"
-   "Souhaitez-vous que je vous aide à réserver ?"
+   "Souhaitez-vous que je vous aide à  réserver ?"
 
 Réponds :"""
         elif user_accepted_help:
@@ -290,15 +288,15 @@ Réponds :"""
             print(f"[AGENT-COMMERCIAL] Mode: AFFINAGE (user accepted help but wants to refine)")
             prompt = f"""{conversation_context}Question actuelle : {query}
 
-RÉSULTATS TROUVÉS :
+RESULTATS TROUVES :
 - {nb_apartments} appartements disponibles
 - Villes : {cities_str}
-- Prix : de {min_price:.0f}€ à {max_price:.0f}€
+- Prix : de {min_price:.0f}â‚¬ à  {max_price:.0f}â‚¬
 
 CONSIGNES (MODE AFFINAGE) :
 1. Présente les résultats de manière engageante (2-3 phrases)
 2. Souligne le meilleur rapport qualité/prix
-3. TERMINE par une question PRÉCISE pour affiner AVANT de montrer les appartements :
+3. TERMINE par une question PRECISE pour affiner AVANT de montrer les appartements :
    "Quelle ville préférez-vous parmi {cities_str} ?"
    "Souhaitez-vous voir uniquement les studios ou aussi les T2 ?"
    "Voulez-vous que je filtre par prix maximum ?"
@@ -311,16 +309,16 @@ Réponds :"""
             print(f"[AGENT-COMMERCIAL] Mode: PROPOSITION (user hasn't accepted help yet)")
             prompt = f"""{conversation_context}Question actuelle : {query}
 
-RÉSULTATS TROUVÉS :
+RESULTATS TROUVES :
 - {nb_apartments} appartements disponibles
 - Villes : {cities_str}
-- Prix : de {min_price:.0f}€ à {max_price:.0f}€
+- Prix : de {min_price:.0f}â‚¬ à  {max_price:.0f}â‚¬
 
 CONSIGNES (MODE PROPOSITION) :
 1. Présente les résultats de manière engageante (2-3 phrases)
 2. Souligne le meilleur rapport qualité/prix
 3. TERMINE par une proposition d'aide :
-   "Puis-je vous aider à trouver un logement qui correspond à vos critères et à votre budget ?"
+   "Puis-je vous aider à  trouver un logement qui correspond à  vos critères et à  votre budget ?"
 
 Réponds :"""
 
@@ -330,18 +328,18 @@ Réponds :"""
         # Pour les infos générales
         system_prompt = """Tu es Sarah, conseillère en logement chez ECLA.
 
-TON RÔLE :
+TON Rà”LE :
 - Répondre aux questions sur nos services, résidences, offres
-- Être concis et informatif
+- àŠtre concis et informatif
 - Orienter vers la recherche d'appartements si pertinent
 
 COLLABORATION :
 Tu travailles avec un système d'affichage d'appartements. Tu peux déclencher l'affichage quand c'est pertinent.
 
-RÈGLES :
-❌ JAMAIS mentionner la concurrence
-✅ Utiliser UNIQUEMENT les informations fournies
-✅ TOUJOURS proposer d'aider à trouver un logement à la fin"""
+RàˆGLES :
+ JAMAIS mentionner la concurrence
+✅… Utiliser UNIQUEMENT les informations fournies
+✅… TOUJOURS proposer d'aider à  trouver un logement à  la fin"""
 
         if user_accepted_help:
             # MODE ACTION : L'utilisateur veut de l'aide, on propose des critères
@@ -360,7 +358,7 @@ Informations disponibles :
 {chr(10).join([f"- {c['content'][:200]}" for c in chunks])}
 
 Réponds de manière claire et structurée (2-3 paragraphes max).
-TERMINE par une proposition d'aide : "Puis-je vous aider à trouver un logement ?" """
+TERMINE par une proposition d'aide : "Puis-je vous aider à  trouver un logement ?" """
 
         max_tokens = 400
 
@@ -393,14 +391,14 @@ Question utilisateur : {query}
 Nombre d'appartements trouvés : {nb_apartments}
 Villes disponibles : {cities_str}
 
-RÈGLE ABSOLUE : JAMAIS mentionner de concurrents (CROUS, LeBonCoin, Appartager, Colonies, etc.) !
+RàˆGLE ABSOLUE : JAMAIS mentionner de concurrents (CROUS, LeBonCoin, Appartager, Colonies, etc.) !
 On propose UNIQUEMENT nos propres appartements !
 
-Écris UNE phrase simple et directe. JAMAIS de "Bonjour" ou formule de politesse.
+Ecris UNE phrase simple et directe. JAMAIS de "Bonjour" ou formule de politesse.
 
 EXEMPLES :
-- "Voici {nb_apartments} appartements disponibles à {cities_str}."
-- "{nb_apartments} logements correspondent à votre recherche."
+- "Voici {nb_apartments} appartements disponibles à  {cities_str}."
+- "{nb_apartments} logements correspondent à  votre recherche."
 
 Si l'utilisateur cherchait une ville spécifique mais qu'on propose d'autres villes :
 - "Voici {nb_apartments} appartements disponibles dans ces villes : {cities_str}."
@@ -411,7 +409,7 @@ Réponds en 1 phrase MAXIMUM :
     else:
         # Pour les infos générales : réponse complète et détaillée
         # MAIS toujours orienter vers NOS services, pas la concurrence
-    prompt = f"""
+        prompt = f"""
 Tu es un assistant spécialisé dans le logement étudiant et coliving.
 
 Question : {query}
@@ -419,7 +417,7 @@ Question : {query}
 Informations disponibles :
 {chr(10).join([f"- {c['content'][:200]}" for c in chunks])}
 
-RÈGLE ABSOLUE : Réponds en utilisant UNIQUEMENT les informations fournies.
+RàˆGLE ABSOLUE : Réponds en utilisant UNIQUEMENT les informations fournies.
 JAMAIS mentionner de concurrents (CROUS, LeBonCoin, Appartager, Colonies, etc.)
 
 Réponds de manière claire, complète et structurée. Tu peux utiliser 2-3 paragraphes si nécessaire.
@@ -447,7 +445,7 @@ def search(req: QueryRequest):
     try:
         print(f"[SEARCH] Recherche recue: {req.query}")
 
-        # ÉTAPE 0: Agent GPT analyse l'intention et extrait les critères EN TENANT COMPTE DE L'HISTORIQUE
+        # ETAPE 0: Agent GPT analyse l'intention et extrait les critères EN TENANT COMPTE DE L'HISTORIQUE
         intent = analyze_user_intent(req.query, req.conversation_history)
         print(f"[GPT-INTENT] {intent.reasoning}")
         print(f"[GPT-INTENT] Recherche appartement: {intent.is_apartment_search}")
@@ -457,25 +455,25 @@ def search(req: QueryRequest):
         if not intent.is_apartment_search:
             req.type = None
         else:
-            # Si recherche d'appartement MAIS aucun critère → forcer type="appartement" pour trouver des résultats
+            # Si recherche d'appartement MAIS aucun critère â†’ forcer type="appartement" pour trouver des résultats
             if not intent.criteria.city and not intent.criteria.max_budget and not intent.criteria.rooms:
                 req.type = "appartement"
-                print("[INFO] Recherche d'appartement sans critères → Forcer type='appartement' pour Qdrant")
+                print("[INFO] Recherche d'appartement sans critères â†’ Forcer type='appartement' pour Qdrant")
 
         try:
-        vector = embed(req.query)
+            vector = embed(req.query)
         except Exception as e:
             print(f"[ERROR] Erreur embedding: {str(e)}")
             raise
 
-        # ÉTAPE 1: Construire les filtres Qdrant avec les critères GPT
+        # ETAPE 1: Construire les filtres Qdrant avec les critères GPT
         filter_conditions = []
 
         if req.type:
             filter_conditions.append(FieldCondition(key="type", match=MatchValue(value=req.type)))
 
         # Filtre ville (extrait par GPT)
-        # Gérer le mapping des ZONES → villes multiples
+        # Gérer le mapping des ZONES â†’ villes multiples
         ZONE_MAPPING = {
             "Paris": ["Massy-Palaiseau", "Villejuif", "Noisy-le-Grand"],
             "Genève": ["Archamps"],
@@ -487,11 +485,11 @@ def search(req: QueryRequest):
             # Si c'est une ZONE, chercher dans toutes les villes de la zone
             if intent.criteria.city in ZONE_MAPPING:
                 # On ne filtre PAS ici, le backend retournera toutes les villes et on filtrera après
-                print(f"[INFO] Zone '{intent.criteria.city}' détectée → recherche dans {ZONE_MAPPING[intent.criteria.city]}")
+                print(f"[INFO] Zone '{intent.criteria.city}' détectée â†’ recherche dans {ZONE_MAPPING[intent.criteria.city]}")
                 # Ne pas ajouter de filtre, on récupère tout et on filtre après
             else:
                 # Ville spécifique
-            filter_conditions.append(FieldCondition(key="city", match=MatchValue(value=intent.criteria.city)))
+                filter_conditions.append(FieldCondition(key="city", match=MatchValue(value=intent.criteria.city)))
 
         # Filtre meublé (extrait par GPT)
         if intent.criteria.furnished is not None:
@@ -504,13 +502,13 @@ def search(req: QueryRequest):
         filters = Filter(must=filter_conditions) if filter_conditions else None
 
         try:
-        results = qdrant.search(
-            collection_name=COLLECTION_NAME,
-            query_vector=vector,
+            results = qdrant.search(
+                collection_name=COLLECTION_NAME,
+                query_vector=vector,
                 limit=20,  # Augmenter pour avoir plus de résultats avant filtrage budget
-            with_payload=True,
-            query_filter=filters
-        )
+                with_payload=True,
+                query_filter=filters
+            )
             print(f"[RESULTS] Trouve {len(results)} resultats")
         except Exception as e:
             print(f"[ERROR] Erreur Qdrant: {str(e)}")
@@ -532,7 +530,7 @@ def search(req: QueryRequest):
                 rent = payload.get("rent_cc_eur", 0)
 
                 # NOTE: On ne filtre PAS par budget ici pour permettre l'affichage de TOUTES les typologies d'une résidence
-                # Le filtrage par budget sera appliqué APRÈS le groupement par ville (ligne 655-657)
+                # Le filtrage par budget sera appliqué APRàˆS le groupement par ville (ligne 655-657)
                 # Cela permet de montrer toutes les typologies disponibles, et de masquer uniquement celles hors budget
 
                 # Créer la card seulement si le budget est OK
@@ -580,11 +578,11 @@ def search(req: QueryRequest):
         if req.summarize:
             print("[AI] Generation du resume IA...")
 
-            # STRATÉGIE COMMERCIALE : Si recherche appartement mais 0 résultat → élargir automatiquement
+            # STRATEGIE COMMERCIALE : Si recherche appartement mais 0 résultat â†’ élargir automatiquement
             if intent.is_apartment_search and len(apartments) == 0:
                 print("[FALLBACK] Aucun appartement trouvé, élargissement automatique...")
 
-                # Élargir : retirer les filtres de ville ET augmenter le budget de 30%
+                # Elargir : retirer les filtres de ville ET augmenter le budget de 30%
                 fallback_filters = []
                 if req.type:
                     fallback_filters.append(FieldCondition(key="type", match=MatchValue(value=req.type)))
@@ -611,11 +609,11 @@ def search(req: QueryRequest):
                 apartments = []
                 chunks = []
 
-                # Élargir le budget de 30% si spécifié
+                # Elargir le budget de 30% si spécifié
                 expanded_budget = None
                 if intent.criteria.max_budget:
                     expanded_budget = int(intent.criteria.max_budget * 1.3)
-                    print(f"[FALLBACK] Budget élargi de {intent.criteria.max_budget}€ à {expanded_budget}€")
+                    print(f"[FALLBACK] Budget élargi de {intent.criteria.max_budget}â‚¬ à  {expanded_budget}â‚¬")
 
                 for r in fallback_results:
                     payload = r.payload
@@ -688,28 +686,19 @@ def search(req: QueryRequest):
                     # Si l'utilisateur a dit "flexible", proposer les ZONES
                     if is_flexible:
                         quick_replies = [
-                            {"id": "paris", "label": "Paris", "value": "Paris", "icon": "🗼"},
-                            {"id": "geneve", "label": "Genève", "value": "Genève", "icon": "🏔️"},
-                            {"id": "lille", "label": "Lille", "value": "Lille", "icon": "🎨"},
-                            {"id": "bordeaux", "label": "Bordeaux", "value": "Bordeaux", "icon": "🍷"}
+                            {"id": "paris", "label": "Paris", "value": "Paris"},
+                            {"id": "geneve", "label": "Genève", "value": "Genève"},
+                            {"id": "lille", "label": "Lille", "value": "Lille"},
+                            {"id": "bordeaux", "label": "Bordeaux", "value": "Bordeaux"}
                         ]
                         print(f"[SUCCESS] Agent commercial - Proposition des ZONES géographiques")
                     else:
                         # Sinon, proposer les villes individuelles + flexible
-                        city_icons = {
-                            "Massy-Palaiseau": "🏢",
-                            "Villejuif": "🏥",
-                            "Noisy-le-Grand": "🌳",
-                            "Archamps": "🏔️",
-                            "Lille": "🎨",
-                            "Bordeaux": "🍷"
-                        }
                         quick_replies = [
-                            {"id": city.lower().replace("-", "_"), "label": city, "value": city, "icon": city_icons.get(city, "🏙️")}
-                            for city in sorted(cities)
-                        ]
+                            {"id": city.lower().replace("-", "_"), "label": city, "value": city}
+                            for city in sorted(cities)]
                         # Ajouter l'option "Flexible"
-                        quick_replies.append({"id": "flexible", "label": "Je suis flexible", "value": "flexible", "icon": "🌍"})
+                        quick_replies.append({"id": "flexible", "label": "Je suis flexible", "value": "flexible"})
                         print(f"[SUCCESS] Agent commercial - {len(cities)} résidences disponibles avec quick replies")
 
                     return {
@@ -720,18 +709,34 @@ def search(req: QueryRequest):
                     }
                 else:
                     # Une seule ville ou ville spécifiée
-                    # Si l'utilisateur n'a PAS précisé de budget, lui demander AVANT d'afficher les typologies
-                    if intent.criteria.max_budget is None:
+                    # NOUVEAU FLUX SIMPLIFIE : Afficher directement TOUTES les typologies
+                    # Le budget est visible sur les cards, l'utilisateur choisit ensuite
+
+                    intro = generate_commercial_response(chunks, req.query, req.conversation_history)
+
+                    # Afficher toutes les typologies de la résidence (sans filtre de budget ni de rooms)
+                    apartments_to_return = apartments
+
+                    print(f"[SUCCESS] Agent commercial - Affichage direct de {len(apartments_to_return)} typologies")
+                    return {
+                        "answer": intro,
+                        "apartments": apartments_to_return,
+                        "residences_available": [],
+                        "has_apartments": True
+                    }
+
+                    # ANCIEN CODE - On garde pour référence mais n'est plus exécuté
+                    if False and intent.criteria.max_budget is None:
                         intro = generate_commercial_response(chunks, req.query, req.conversation_history)
 
                         # Proposer des tranches de budget
                         quick_replies = [
-                            {"id": "budget_600", "label": "Moins de 600€", "value": "600", "icon": "💰"},
-                            {"id": "budget_800", "label": "600-800€", "value": "800", "icon": "💵"},
-                            {"id": "budget_1000", "label": "800-1000€", "value": "1000", "icon": "💶"},
-                            {"id": "budget_1500", "label": "1000-1500€", "value": "1500", "icon": "💷"},
-                            {"id": "budget_plus", "label": "Plus de 1500€", "value": "9999", "icon": "💸"},
-                            {"id": "budget_flexible", "label": "Flexible", "value": "flexible", "icon": "🌟"}
+                            {"id": "budget_600", "label": "Moins de 600â‚¬", "value": "600"},
+                            {"id": "budget_800", "label": "600-800â‚¬", "value": "800"},
+                            {"id": "budget_1000", "label": "800-1000â‚¬", "value": "1000"},
+                            {"id": "budget_1500", "label": "1000-1500â‚¬", "value": "1500"},
+                            {"id": "budget_plus", "label": "Plus de 1500â‚¬", "value": "9999"},
+                            {"id": "budget_flexible", "label": "Flexible", "value": "flexible"}
                         ]
 
                         print(f"[SUCCESS] Agent commercial - Demande du budget avant d'afficher les typologies")
@@ -756,24 +761,24 @@ def search(req: QueryRequest):
                             for apt in apartments_in_budget:
                                 rooms = apt['rooms']
                                 if rooms == 0:
-                                    typologie_types.add(("Colocation", 0, "🏠"))
+                                    typologie_types.add(("Colocation", 0, "ðŸ "))
                                 elif rooms == 1:
                                     surface = apt.get('surface_m2', 0)
                                     if surface < 23:
-                                        typologie_types.add(("Studio", 1, "🏠"))
+                                        typologie_types.add(("Studio", 1, "ðŸ "))
                                     else:
-                                        typologie_types.add(("T1", 1, "🏠"))
+                                        typologie_types.add(("T1", 1, "ðŸ "))
                                 else:
-                                    typologie_types.add((f"T{rooms}", rooms, "🏠"))
+                                    typologie_types.add((f"T{rooms}", rooms, "ðŸ "))
 
                             # Créer les quick replies pour les typologies
                             typologie_list = sorted(typologie_types, key=lambda x: x[1])
                             quick_replies = [
-                                {"id": f"typo_{typ[0].lower()}", "label": typ[0], "value": typ[0], "icon": typ[2]}
+                                {"id": f"typo_{typ[0].lower()}", "label": typ[0], "value": typ[0]}
                                 for typ in typologie_list
                             ]
                             # Ajouter "Tous" pour voir toutes les typologies
-                            quick_replies.append({"id": "typo_all", "label": "Tous", "value": "all", "icon": "✨"})
+                            quick_replies.append({"id": "typo_all", "label": "Tous", "value": "all"})
 
                             print(f"[SUCCESS] Agent commercial - Proposition de {len(quick_replies)-1} types de typologies")
                             return {
@@ -801,11 +806,11 @@ def search(req: QueryRequest):
 
                             excluded = len(apartments) - len(apartments_to_return)
                             filter_desc = "toutes typologies" if is_all else f"typologie rooms={intent.criteria.rooms}"
-                            print(f"[INFO] Filtrage par budget {intent.criteria.max_budget}€ et {filter_desc}: {len(apartments_to_return)}/{len(apartments)} typologies affichées")
+                            print(f"[INFO] Filtrage par budget {intent.criteria.max_budget}â‚¬ et {filter_desc}: {len(apartments_to_return)}/{len(apartments)} typologies affichées")
 
-                intro = generate_commercial_response(chunks, req.query, req.conversation_history)
+                            intro = generate_commercial_response(chunks, req.query, req.conversation_history)
                             print(f"[SUCCESS] Agent commercial - {len(apartments_to_return)} typologies affichées")
-                return {
+                            return {
                     "answer": intro,
                                 "apartments": apartments_to_return,
                                 "residences_available": [],

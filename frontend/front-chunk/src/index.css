@@ -466,6 +466,7 @@ body {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, transparent 50%);
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .apartment-card:hover {
@@ -747,20 +748,20 @@ body {
     margin: 0;
     border-radius: 0;
   }
-  
+
   .chat-header {
     padding: 20px 24px;
   }
-  
+
   .chat-header h1 {
     font-size: 20px;
   }
-  
+
   .chat-messages {
     padding: 20px 24px;
     gap: 12px;
   }
-  
+
   .message-content {
     max-width: 85%; /* Utiliser un pourcentage sur mobile */
     font-size: 14px;
@@ -774,54 +775,54 @@ body {
   .message-time-user {
     margin-right: 48px; /* Ajusté pour mobile */
   }
-  
+
   .chat-input {
     padding: 16px 24px;
   }
-  
+
   .chat-input button {
     padding: 14px 24px;
     min-width: 100px;
   }
-  
+
   .apartment-card {
     padding: 16px;
     gap: 12px;
     min-height: 70px;
   }
-  
+
   .apartment-card-header {
     min-width: 120px;
   }
-  
+
   .apartment-card-title h3 {
     font-size: 15px;
   }
-  
+
   .apartment-card-postal {
     font-size: 11px;
   }
-  
+
   .apartment-card-price {
     font-size: 16px;
     min-width: 70px;
   }
-  
+
   .apartment-card-dpe-label {
     width: 20px;
     height: 20px;
     font-size: 10px;
   }
-  
+
   .apartment-card-dpe-text {
     font-size: 9px;
   }
-  
+
   .apartment-card-toggle {
     padding: 10px 16px;
     font-size: 11px;
   }
-  
+
   .apartment-card-details {
     gap: 8px;
   }
@@ -836,16 +837,16 @@ body {
     width: 100%;
     height: 180px;
   }
-  
+
   .apartment-card-description {
     font-size: 12px;
     padding: 10px;
   }
-  
+
   .apartment-card-tags {
     gap: 6px;
   }
-  
+
   .apartment-card-tag {
     font-size: 10px;
     padding: 4px 8px;
@@ -909,12 +910,12 @@ body {
   .quick-replies-container {
     gap: 8px;
   }
-  
+
   .quick-reply-btn {
     font-size: 13px;
     padding: 8px 14px;
   }
-  
+
   .quick-reply-icon {
     font-size: 18px;
   }
@@ -1196,6 +1197,248 @@ body {
 }
 
 /* ============================================ */
+/* UPSELL MODAL - FOOTER STICKY AVEC RECAP */
+/* ============================================ */
+
+.upsell-modal-footer-sticky {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-top: 2px solid #e2e8f0;
+  padding: 20px 16px 12px 16px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  z-index: 10;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+}
+
+.upsell-modal-footer-sticky.expanded {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Toggle button pour déplier/replier */
+.upsell-footer-toggle {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 2px solid #667eea;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  z-index: 11;
+  padding: 0;
+}
+
+.upsell-footer-toggle:hover {
+  background: #667eea;
+  color: white;
+  transform: translateX(-50%) scale(1.15);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+}
+
+.upsell-footer-toggle:active {
+  transform: translateX(-50%) scale(1.05);
+}
+
+.toggle-arrow {
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Contenu déplié scrollable */
+.upsell-footer-details-expanded {
+  max-height: 40vh;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+}
+
+.upsell-footer-section {
+  background: #fef3e2;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.upsell-footer-rent {
+  background: #fef3e2;
+}
+
+.upsell-footer-total-section {
+  background: #fef3e2;
+}
+
+/* Barre du prix total toujours visible */
+.upsell-footer-total-bar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.upsell-footer-total-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.upsell-footer-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+.upsell-footer-main {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.upsell-footer-label {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.upsell-footer-value {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.upsell-footer-extras-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.upsell-footer-extra {
+  font-size: 13px;
+  color: #475569;
+  padding-left: 8px;
+}
+
+.upsell-footer-extra span:first-child {
+  color: #64748b;
+}
+
+.upsell-footer-extra span:last-child {
+  font-weight: 600;
+  color: #64748b;
+}
+
+.upsell-footer-subtotal {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e2a858;
+  font-weight: 700;
+}
+
+.upsell-footer-label-bold {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.upsell-footer-value-bold {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.upsell-footer-total {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.upsell-footer-label-total {
+  font-weight: 700;
+  color: white;
+  font-size: 16px;
+}
+
+.upsell-footer-value-total {
+  font-size: 22px;
+  font-weight: 800;
+  color: white;
+}
+
+.upsell-footer-charges {
+  font-size: 13px;
+  font-style: italic;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.upsell-footer-fees {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.upsell-footer-fees span:first-child {
+  color: #1e293b;
+}
+
+.upsell-footer-fees span:last-child {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Responsive pour mobile */
+@media (max-width: 768px) {
+  .upsell-modal-footer-sticky {
+    padding: 10px 12px;
+  }
+
+  .upsell-footer-section {
+    padding: 10px;
+  }
+
+  .upsell-footer-main {
+    font-size: 15px;
+  }
+
+  .upsell-footer-value-total {
+    font-size: 20px;
+  }
+
+  .upsell-footer-toggle {
+    width: 36px;
+    height: 36px;
+    top: -14px;
+  }
+
+  .toggle-arrow {
+    font-size: 14px;
+  }
+
+  .upsell-footer-details-expanded {
+    max-height: 35vh;
+  }
+
+  .upsell-footer-line {
+    font-size: 13px;
+  }
+}
+
+/* ============================================ */
 /* BOOKING SUMMARY */
 /* ============================================ */
 
@@ -1364,7 +1607,7 @@ body {
   .booking-summary-footer {
     flex-direction: column;
   }
-  
+
   .booking-summary-btn {
     min-width: 100%;
   }
