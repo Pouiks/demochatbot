@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 
-interface UpsellOptions {
+interface ApartmentOptions {
+    floorChoice: 'any' | 'low' | 'medium' | 'high';
+    orientationChoice: 'any' | 'north' | 'south' | 'east' | 'west';
+    bedChoice: 'any' | '140' | '160' | '180';
+    acChoice: 'any' | 'with' | 'without';
+}
+
+interface ServiceOptions {
     tv: boolean;
     packLinge: boolean;
     parkingIndoor: boolean;
@@ -30,20 +37,33 @@ interface Apartment {
 
 interface UpsellOptionsModalProps {
     typologie: Apartment;
-    currentOptions: UpsellOptions;
-    onValidate: (options: UpsellOptions, total: number) => void;
+    currentOptions: ServiceOptions;
+    onValidate: (options: ServiceOptions, total: number) => void;
     onClose: () => void;
 }
 
-const calculateFloorSupplement = (floor: number): number => {
-    if (floor === 0) return 0;
-    if (floor <= 2) return 30;
-    if (floor <= 4) return 50;
-    if (floor <= 6) return 80;
-    return 100;
+const calculateFloorSupplement = (floorChoice: string): number => {
+    switch (floorChoice) {
+        case 'low': return 30;
+        case 'medium': return 50;
+        case 'high': return 80;
+        default: return 0;
+    }
 };
 
-const calculateOptionsCost = (options: UpsellOptions): number => {
+const calculateBedSupplement = (bedChoice: string): number => {
+    switch (bedChoice) {
+        case '160': return 20;
+        case '180': return 40;
+        default: return 0;
+    }
+};
+
+const calculateAcSupplement = (acChoice: string): number => {
+    return acChoice === 'with' ? 50 : 0;
+};
+
+const calculateServicesCost = (options: ServiceOptions): number => {
     let cost = 0;
     if (options.tv) cost += 40;
     if (options.packLinge) cost += 30;
@@ -54,26 +74,53 @@ const calculateOptionsCost = (options: UpsellOptions): number => {
 
 export default function UpsellOptionsModal({ typologie, currentOptions, onValidate, onClose }: UpsellOptionsModalProps) {
     console.log('[UpsellOptionsModal] Modal rendered for typologie:', typologie.id);
-    const [options, setOptions] = useState<UpsellOptions>(currentOptions);
+
+    const [currentStep, setCurrentStep] = useState(1);
     const [isFooterExpanded, setIsFooterExpanded] = useState(false);
 
-    const floorSupplement = calculateFloorSupplement(typologie.floor || 0);
-    const optionsCost = calculateOptionsCost(options);
-    const totalRent = typologie.rent_cc_eur + floorSupplement + optionsCost;
+    // Options de l'appartement (Étape 1)
+    const [apartmentOptions, setApartmentOptions] = useState<ApartmentOptions>({
+        floorChoice: 'any',
+        orientationChoice: 'any',
+        bedChoice: 'any',
+        acChoice: 'any'
+    });
+
+    // Services supplémentaires (Étape 2)
+    const [serviceOptions, setServiceOptions] = useState<ServiceOptions>(currentOptions);
+
+    // Calculs des suppléments
+    const floorSupplement = calculateFloorSupplement(apartmentOptions.floorChoice);
+    const bedSupplement = calculateBedSupplement(apartmentOptions.bedChoice);
+    const acSupplement = calculateAcSupplement(apartmentOptions.acChoice);
+    const apartmentSupplementsTotal = floorSupplement + bedSupplement + acSupplement;
+
+    const servicesCost = calculateServicesCost(serviceOptions);
+    const totalRent = typologie.rent_cc_eur + apartmentSupplementsTotal + servicesCost;
 
     // Calculer les frais initiaux
     const applicationFee = typologie.application_fee || 100;
     const depositAmount = totalRent * (typologie.deposit_months || 1);
 
-    const toggleOption = (option: keyof UpsellOptions) => {
-        setOptions(prev => ({
+    const toggleService = (service: keyof ServiceOptions) => {
+        setServiceOptions(prev => ({
             ...prev,
-            [option]: !prev[option]
+            [service]: !prev[service]
         }));
     };
 
     const handleValidate = () => {
-        onValidate(options, totalRent);
+        onValidate(serviceOptions, totalRent);
+    };
+
+    const goToNextStep = () => {
+        setCurrentStep(2);
+        setIsFooterExpanded(false);
+    };
+
+    const goToPreviousStep = () => {
+        setCurrentStep(1);
+        setIsFooterExpanded(false);
     };
 
     // Empêcher le scroll du body quand le modal est ouvert
@@ -92,90 +139,256 @@ export default function UpsellOptionsModal({ typologie, currentOptions, onValida
                     <button className="upsell-modal-close" onClick={onClose}>×</button>
                 </div>
 
+                {/* Progress bar */}
+                <div className="upsell-progress-bar">
+                    <div className="progress-steps">
+                        <div className={`progress-step ${currentStep >= 1 ? 'active' : ''}`}>
+                            <div className="step-number">1</div>
+                            <div className="step-label">Appartement</div>
+                        </div>
+                        <div className="progress-line"></div>
+                        <div className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}>
+                            <div className="step-number">2</div>
+                            <div className="step-label">Services</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="upsell-modal-body">
                     <div className="upsell-summary">
                         <h3>{typologie.rooms === 0 ? 'Colocation' : `T${typologie.rooms}`} - {typologie.surface_m2}m² à {typologie.city}</h3>
-                        <p className="upsell-floor-info">
-                            Étage {typologie.floor} - Orientation {typologie.orientation}
-                        </p>
+                        <p className="upsell-base-price">Loyer de base : {typologie.rent_cc_eur}€/mois</p>
                     </div>
 
-                    <div className="upsell-price-breakdown">
-                        <div className="upsell-price-line">
-                            <span>Loyer de base</span>
-                            <span>{typologie.rent_cc_eur}€/mois</span>
+                    {/* ÉTAPE 1 : Options de l'appartement */}
+                    {currentStep === 1 && (
+                        <div className="upsell-step-content">
+                            {/* Choix de l'étage */}
+                            <div className="option-group">
+                                <h4 className="option-group-title">Choix de l'étage</h4>
+                                <div className="option-buttons-grid">
+                                    <button
+                                        className={`option-btn ${apartmentOptions.floorChoice === 'any' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, floorChoice: 'any' }))}
+                                    >
+                                        <span className="option-icon">🎲</span>
+                                        <span className="option-label">Peu importe</span>
+                                        <span className="option-price">Prix de base</span>
+                                    </button>
+                                    <button
+                                        className={`option-btn ${apartmentOptions.floorChoice === 'low' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, floorChoice: 'low' }))}
+                                    >
+                                        <span className="option-icon">🏢</span>
+                                        <span className="option-label">Étage bas (0-2)</span>
+                                        <span className="option-price">+30€/mois</span>
+                                    </button>
+                                    <button
+                                        className={`option-btn ${apartmentOptions.floorChoice === 'medium' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, floorChoice: 'medium' }))}
+                                    >
+                                        <span className="option-icon">🏢</span>
+                                        <span className="option-label">Étage moyen (3-4)</span>
+                                        <span className="option-price">+50€/mois</span>
+                                    </button>
+                                    <button
+                                        className={`option-btn ${apartmentOptions.floorChoice === 'high' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, floorChoice: 'high' }))}
+                                    >
+                                        <span className="option-icon">🏢</span>
+                                        <span className="option-label">Étage haut (5+)</span>
+                                        <span className="option-price">+80€/mois</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Choix de l'orientation */}
+                            <div className="option-group">
+                                <h4 className="option-group-title">Orientation</h4>
+                                <div className="option-buttons-grid">
+                                    <button
+                                        className={`option-btn ${apartmentOptions.orientationChoice === 'any' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, orientationChoice: 'any' }))}
+                                    >
+                                        <span className="option-icon">🎲</span>
+                                        <span className="option-label">Peu importe</span>
+                                        <span className="option-price">Prix de base</span>
+                                    </button>
+                                    <button
+                                        className={`option-btn ${apartmentOptions.orientationChoice === 'north' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, orientationChoice: 'north' }))}
+                                    >
+                                        <span className="option-icon">🧭</span>
+                                        <span className="option-label">Nord</span>
+                                        <span className="option-price">Inclus</span>
+                                    </button>
+                                    <button
+                                        className={`option-btn ${apartmentOptions.orientationChoice === 'south' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, orientationChoice: 'south' }))}
+                                    >
+                                        <span className="option-icon">☀️</span>
+                                        <span className="option-label">Sud</span>
+                                        <span className="option-price">Inclus</span>
+                                    </button>
+                                    <button
+                                        className={`option-btn ${apartmentOptions.orientationChoice === 'east' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, orientationChoice: 'east' }))}
+                                    >
+                                        <span className="option-icon">🌅</span>
+                                        <span className="option-label">Est</span>
+                                        <span className="option-price">Inclus</span>
+                                    </button>
+                                    <button
+                                        className={`option-btn ${apartmentOptions.orientationChoice === 'west' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, orientationChoice: 'west' }))}
+                                    >
+                                        <span className="option-icon">🌇</span>
+                                        <span className="option-label">Ouest</span>
+                                        <span className="option-price">Inclus</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Taille du lit */}
+                            <div className="option-group">
+                                <h4 className="option-group-title">Taille du lit</h4>
+                                <div className="option-buttons-grid">
+                                    <button
+                                        className={`option-btn ${apartmentOptions.bedChoice === 'any' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, bedChoice: 'any' }))}
+                                    >
+                                        <span className="option-icon">🎲</span>
+                                        <span className="option-label">Peu importe</span>
+                                        <span className="option-price">Prix de base</span>
+                                    </button>
+                                    <button
+                                        className={`option-btn ${apartmentOptions.bedChoice === '140' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, bedChoice: '140' }))}
+                                    >
+                                        <span className="option-icon">🛏️</span>
+                                        <span className="option-label">Lit 140cm</span>
+                                        <span className="option-price">Inclus</span>
+                                    </button>
+                                    <button
+                                        className={`option-btn ${apartmentOptions.bedChoice === '160' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, bedChoice: '160' }))}
+                                    >
+                                        <span className="option-icon">🛏️</span>
+                                        <span className="option-label">Lit 160cm</span>
+                                        <span className="option-price">+20€/mois</span>
+                                    </button>
+                                    <button
+                                        className={`option-btn ${apartmentOptions.bedChoice === '180' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, bedChoice: '180' }))}
+                                    >
+                                        <span className="option-icon">🛏️</span>
+                                        <span className="option-label">Lit 180cm</span>
+                                        <span className="option-price">+40€/mois</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Climatisation */}
+                            <div className="option-group">
+                                <h4 className="option-group-title">Climatisation</h4>
+                                <div className="option-buttons-grid">
+                                    <button
+                                        className={`option-btn ${apartmentOptions.acChoice === 'any' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, acChoice: 'any' }))}
+                                    >
+                                        <span className="option-icon">🎲</span>
+                                        <span className="option-label">Peu importe</span>
+                                        <span className="option-price">Prix de base</span>
+                                    </button>
+                                    <button
+                                        className={`option-btn ${apartmentOptions.acChoice === 'with' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, acChoice: 'with' }))}
+                                    >
+                                        <span className="option-icon">❄️</span>
+                                        <span className="option-label">Avec climatisation</span>
+                                        <span className="option-price">+50€/mois</span>
+                                    </button>
+                                    <button
+                                        className={`option-btn ${apartmentOptions.acChoice === 'without' ? 'active' : ''}`}
+                                        onClick={() => setApartmentOptions(prev => ({ ...prev, acChoice: 'without' }))}
+                                    >
+                                        <span className="option-icon">🌡️</span>
+                                        <span className="option-label">Sans climatisation</span>
+                                        <span className="option-price">Inclus</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div className="upsell-price-line upsell-supplement">
-                            <span>Supplément étage {typologie.floor}</span>
-                            <span>+{floorSupplement}€/mois</span>
+                    )}
+
+                    {/* ÉTAPE 2 : Services supplémentaires */}
+                    {currentStep === 2 && (
+                        <div className="upsell-step-content">
+                            <h4 className="step-title">Services supplémentaires</h4>
+
+                            <label className="upsell-option">
+                                <div className="upsell-option-info">
+                                    <input
+                                        type="checkbox"
+                                        checked={serviceOptions.tv}
+                                        onChange={() => toggleService('tv')}
+                                    />
+                                    <div>
+                                        <span className="upsell-option-name">📺 Télévision</span>
+                                        <span className="upsell-option-desc">TV écran plat avec chaînes incluses</span>
+                                    </div>
+                                </div>
+                                <span className="upsell-option-price">+40€/mois</span>
+                            </label>
+
+                            <label className="upsell-option">
+                                <div className="upsell-option-info">
+                                    <input
+                                        type="checkbox"
+                                        checked={serviceOptions.packLinge}
+                                        onChange={() => toggleService('packLinge')}
+                                    />
+                                    <div>
+                                        <span className="upsell-option-name">🛏️ Pack linge</span>
+                                        <span className="upsell-option-desc">Draps, couettes et serviettes fournis</span>
+                                    </div>
+                                </div>
+                                <span className="upsell-option-price">+30€/mois</span>
+                            </label>
+
+                            <label className="upsell-option">
+                                <div className="upsell-option-info">
+                                    <input
+                                        type="checkbox"
+                                        checked={serviceOptions.parkingIndoor}
+                                        onChange={() => toggleService('parkingIndoor')}
+                                        disabled={serviceOptions.parkingOutdoor}
+                                    />
+                                    <div>
+                                        <span className="upsell-option-name">🅿️ Place de parking sous-sol</span>
+                                        <span className="upsell-option-desc">Parking sécurisé en sous-sol</span>
+                                    </div>
+                                </div>
+                                <span className="upsell-option-price">+50€/mois</span>
+                            </label>
+
+                            <label className="upsell-option">
+                                <div className="upsell-option-info">
+                                    <input
+                                        type="checkbox"
+                                        checked={serviceOptions.parkingOutdoor}
+                                        onChange={() => toggleService('parkingOutdoor')}
+                                        disabled={serviceOptions.parkingIndoor}
+                                    />
+                                    <div>
+                                        <span className="upsell-option-name">🅿️ Place de parking extérieur</span>
+                                        <span className="upsell-option-desc">Parking extérieur surveillé</span>
+                                    </div>
+                                </div>
+                                <span className="upsell-option-price">+30€/mois</span>
+                            </label>
                         </div>
-                    </div>
-
-                    <div className="upsell-options-section">
-                        <h3>Options disponibles</h3>
-
-                        <label className="upsell-option">
-                            <div className="upsell-option-info">
-                                <input
-                                    type="checkbox"
-                                    checked={options.tv}
-                                    onChange={() => toggleOption('tv')}
-                                />
-                                <div>
-                                    <span className="upsell-option-name">Télévision</span>
-                                    <span className="upsell-option-desc">TV écran plat avec chaînes incluses</span>
-                                </div>
-                            </div>
-                            <span className="upsell-option-price">+40€/mois</span>
-                        </label>
-
-                        <label className="upsell-option">
-                            <div className="upsell-option-info">
-                                <input
-                                    type="checkbox"
-                                    checked={options.packLinge}
-                                    onChange={() => toggleOption('packLinge')}
-                                />
-                                <div>
-                                    <span className="upsell-option-name">Pack linge</span>
-                                    <span className="upsell-option-desc">Draps, couettes et serviettes fournis</span>
-                                </div>
-                            </div>
-                            <span className="upsell-option-price">+30€/mois</span>
-                        </label>
-
-                        <label className="upsell-option">
-                            <div className="upsell-option-info">
-                                <input
-                                    type="checkbox"
-                                    checked={options.parkingIndoor}
-                                    onChange={() => toggleOption('parkingIndoor')}
-                                    disabled={options.parkingOutdoor}
-                                />
-                                <div>
-                                    <span className="upsell-option-name">Place de parking sous-sol</span>
-                                    <span className="upsell-option-desc">Parking sécurisé en sous-sol</span>
-                                </div>
-                            </div>
-                            <span className="upsell-option-price">+50€/mois</span>
-                        </label>
-
-                        <label className="upsell-option">
-                            <div className="upsell-option-info">
-                                <input
-                                    type="checkbox"
-                                    checked={options.parkingOutdoor}
-                                    onChange={() => toggleOption('parkingOutdoor')}
-                                    disabled={options.parkingIndoor}
-                                />
-                                <div>
-                                    <span className="upsell-option-name">Place de parking extérieur</span>
-                                    <span className="upsell-option-desc">Parking extérieur surveillé</span>
-                                </div>
-                            </div>
-                            <span className="upsell-option-price">+30€/mois</span>
-                        </label>
-                    </div>
+                    )}
                 </div>
 
                 <div className={`upsell-modal-footer-sticky ${isFooterExpanded ? 'expanded' : ''}`}>
@@ -191,47 +404,68 @@ export default function UpsellOptionsModal({ typologie, currentOptions, onValida
                     {/* Contenu scrollable déplié */}
                     {isFooterExpanded && (
                         <div className="upsell-footer-details-expanded">
-                            {/* Section Loyer + Extras */}
+                            {/* Section Loyer de base + Options appartement */}
                             <div className="upsell-footer-section upsell-footer-rent">
                                 <div className="upsell-footer-line upsell-footer-main">
-                                    <span className="upsell-footer-label">Loyer</span>
-                                    <span className="upsell-footer-value">{typologie.rent_cc_eur + floorSupplement}€/mois</span>
+                                    <span className="upsell-footer-label">Loyer de base</span>
+                                    <span className="upsell-footer-value">{typologie.rent_cc_eur}€/mois</span>
                                 </div>
 
-                                {optionsCost > 0 && (
+                                {apartmentSupplementsTotal > 0 && (
                                     <>
-                                        <div className="upsell-footer-extras-title">Extras</div>
-                                        {options.tv && (
+                                        <div className="upsell-footer-extras-title">Options appartement</div>
+                                        {floorSupplement > 0 && (
                                             <div className="upsell-footer-line upsell-footer-extra">
-                                                <span>Télévision (32")</span>
-                                                <span>40€/mois</span>
+                                                <span>Étage {apartmentOptions.floorChoice}</span>
+                                                <span>+{floorSupplement}€/mois</span>
                                             </div>
                                         )}
-                                        {options.packLinge && (
+                                        {bedSupplement > 0 && (
                                             <div className="upsell-footer-line upsell-footer-extra">
-                                                <span>Pack linge</span>
-                                                <span>30€/mois</span>
+                                                <span>Lit {apartmentOptions.bedChoice}cm</span>
+                                                <span>+{bedSupplement}€/mois</span>
                                             </div>
                                         )}
-                                        {options.parkingIndoor && (
+                                        {acSupplement > 0 && (
                                             <div className="upsell-footer-line upsell-footer-extra">
-                                                <span>Parking sous-sol</span>
-                                                <span>50€/mois</span>
+                                                <span>Climatisation</span>
+                                                <span>+{acSupplement}€/mois</span>
                                             </div>
                                         )}
-                                        {options.parkingOutdoor && (
-                                            <div className="upsell-footer-line upsell-footer-extra">
-                                                <span>Parking extérieur</span>
-                                                <span>30€/mois</span>
-                                            </div>
-                                        )}
-                                        <div className="upsell-footer-line upsell-footer-subtotal">
-                                            <span className="upsell-footer-label-bold">Total extras</span>
-                                            <span className="upsell-footer-value-bold">{optionsCost}€/mois</span>
-                                        </div>
                                     </>
                                 )}
                             </div>
+
+                            {/* Section Services */}
+                            {servicesCost > 0 && (
+                                <div className="upsell-footer-section upsell-footer-rent">
+                                    <div className="upsell-footer-extras-title">Services supplémentaires</div>
+                                    {serviceOptions.tv && (
+                                        <div className="upsell-footer-line upsell-footer-extra">
+                                            <span>Télévision</span>
+                                            <span>+40€/mois</span>
+                                        </div>
+                                    )}
+                                    {serviceOptions.packLinge && (
+                                        <div className="upsell-footer-line upsell-footer-extra">
+                                            <span>Pack linge</span>
+                                            <span>+30€/mois</span>
+                                        </div>
+                                    )}
+                                    {serviceOptions.parkingIndoor && (
+                                        <div className="upsell-footer-line upsell-footer-extra">
+                                            <span>Parking sous-sol</span>
+                                            <span>+50€/mois</span>
+                                        </div>
+                                    )}
+                                    {serviceOptions.parkingOutdoor && (
+                                        <div className="upsell-footer-line upsell-footer-extra">
+                                            <span>Parking extérieur</span>
+                                            <span>+30€/mois</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Section Prix Total */}
                             <div className="upsell-footer-section upsell-footer-total-section">
@@ -257,13 +491,25 @@ export default function UpsellOptionsModal({ typologie, currentOptions, onValida
                         </div>
                     </div>
 
-                    {/* Bouton de validation */}
-                    <button className="upsell-validate-btn" onClick={handleValidate}>
-                        Continuer
-                    </button>
+                    {/* Boutons de navigation */}
+                    <div className="upsell-navigation-buttons">
+                        {currentStep === 1 ? (
+                            <button className="upsell-validate-btn upsell-next-btn" onClick={goToNextStep}>
+                                Suivant
+                            </button>
+                        ) : (
+                            <>
+                                <button className="upsell-back-btn" onClick={goToPreviousStep}>
+                                    ← Précédent
+                                </button>
+                                <button className="upsell-validate-btn" onClick={handleValidate}>
+                                    Valider ma réservation
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
-
